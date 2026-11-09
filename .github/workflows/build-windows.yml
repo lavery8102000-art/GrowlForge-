@@ -1,0 +1,28 @@
+name: Build GrowlForge (Windows VST3)
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure
+        run: cmake -S . -B build -A x64 -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build VST3
+        run: cmake --build build --config Release --target GrowlForge_VST3 --parallel
+
+      - name: Package
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path dist | Out-Null
+          Copy-Item -Recurse "build/GrowlForge_artefacts/Release/VST3/GrowlForge.vst3" "dist/GrowlForge.vst3"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: GrowlForge-VST3-Windows
+          path: dist/GrowlForge.vst3
